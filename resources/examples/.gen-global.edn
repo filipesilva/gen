@@ -1,0 +1,7 @@
+{;; shorthands e.g. `gen scratch app`
+ :sources {:scratch "~/repos/gen-scratch"
+           :license "https://github.com/user/license:mit"}
+ ;; global defaults, local and cli vars will overwrite these
+ :vars    {:name   "John Doe"
+           :author "John Doe"
+           :email  "john@doe.com"}}

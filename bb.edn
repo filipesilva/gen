@@ -1,0 +1,20 @@
+{:bbin/bin {gen {:main-opts ["-x" "filipesilva.gen.cli/run"]}}
+ :deps     {dev.weavejester/medley     {:mvn/version "1.8.1"}
+            io.github.paintparty/bling {:mvn/version "0.4.2"}}
+ :paths    ["src"]
+ :tasks    {clean (shell "rm -rf tmp/** e2e/actual")
+            test  {:extra-paths ["test"]
+                   :extra-deps  {io.github.cognitect-labs/test-runner
+                                 {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+                   :task        cognitect.test-runner/-main}
+            e2e (do
+                  (run 'clean)
+                  (shell "gen --version")
+                  (shell "gen --help")
+                  (shell "gen --config-help")
+                  (shell "gen resources/examples/scratch e2e/actual/new-scratch")
+                  (shell "rm -rf e2e/actual/new-scratch/.git")
+                  (shell "gen resources/examples/license e2e/actual/license/mit --author \"Filipe Silva\" --year 2025")
+                  (shell "gen resources/examples/license:eclipse e2e/actual/license/eclipe")
+                  (shell "git diff --no-index e2e/expected e2e/actual")
+                  (run 'clean))}}

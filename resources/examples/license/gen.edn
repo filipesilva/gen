@@ -1,0 +1,5 @@
+{:default-alias :mit
+ :aliases
+ {:mit       {:root "mit"}
+  :eclipse   {:root "eclipse"}
+  :unlicense {:root "unlicense"}}}

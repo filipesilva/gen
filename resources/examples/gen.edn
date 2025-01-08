@@ -1,0 +1,5 @@
+{:root ""           ;; root for template files
+ :vars {}           ;; default vars, e.g. {:author "me"}
+ :cmds []           ;; run in shell after file generation, e.g. ["git init"]
+ :default-alias nil ;; used if no alias is specified
+ :aliases {}}       ;; aliases are extra sets of configuration that are merged on top

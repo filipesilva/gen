@@ -1,0 +1,3 @@
+{:default-alias :test
+ :aliases
+ {:test {:root "templates/test"}}}
