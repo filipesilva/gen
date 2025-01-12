@@ -1,5 +1,7 @@
 # Gen
 
+<img src="logo.svg" alt="Gen logo" style="height: 50px;">
+
 A CLI tool to generate files and run commands from templates.
 
 It is intended to make it easy to create new custom projects and generate files within existing projects.
@@ -12,6 +14,7 @@ create  to/there/src/foo.clj
 run     git init
 ```
 
+_Special thanks to [jaide](https://github.com/jaidetree/) for the logo!_
 
 ## Install
 
