@@ -59,7 +59,7 @@
     (and (empty? source) local-config-path)
     (fs/parent local-config-path)
 
-    (fs/directory? source)
+    (and (not-empty source) (fs/directory? source))
     source
 
     (or (str/starts-with? source "https://")
