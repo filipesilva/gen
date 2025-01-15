@@ -1,6 +1,5 @@
 {:bbin/bin {gen {:main-opts ["-x" "filipesilva.gen.cli/run"]}}
- :deps     {dev.weavejester/medley     {:mvn/version "1.8.1"}
-            io.github.paintparty/bling {:mvn/version "0.4.2"}}
+ :deps     {filipesilva/gen {:local/root "."}}
  :paths    ["src"]
  :tasks    {clean (shell "rm -rf tmp/** e2e/actual")
             test  {:extra-paths ["test"]

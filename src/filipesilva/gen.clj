@@ -87,6 +87,7 @@
 ;;     own file without xform extension, own file content, and return a new file map.
 ;;   - Default xforms include `append` (appending dest file), and `require` (adds requires).
 ;;   - language specific xforms should target ext, e.g. .clj.require instead of just .require
+;;   - could call a cmd with both file contents as args, maybe overkill
 ;; - xform seems like the escape hatch
 ;;   - probably always needs dest use symbol/scripts and paths and whatever
 ;;   - will need a classpath and require thing... try dest reuse as much source bb
