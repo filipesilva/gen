@@ -41,8 +41,10 @@
                                (if (= first "https")
                                  (into [(str first ":" second)] rest)
                                  split))
-        source'''            (get sources (keyword source'') source'')]
-    [source''' aliases dest']))
+        source'''            (get sources (keyword source'') source'')
+        source''''           (some-> source''' not-empty fs/expand-home fs/absolutize str)
+        dest''               (some-> dest' not-empty fs/expand-home fs/absolutize str)]
+    [source'''' aliases dest'']))
 
 (defn git-clone-path
   [git-url]
@@ -57,7 +59,7 @@
   [source local-config-path]
   (cond
     (and (empty? source) local-config-path)
-    (fs/parent local-config-path)
+    (str (fs/parent local-config-path))
 
     (and (not-empty source) (fs/directory? source))
     source
@@ -100,5 +102,5 @@
                   (select-keys local-config [:vars])
                   (dissoc source+aliases-config :aliases :default-alias)
                   (select-keys cli-config [:vars :gen/overwrite :gen/dry-run :gen/allow-missing])
-                  {:source (-> source-path fs/expand-home fs/absolutize str)
-                   :dest   (-> dest fs/expand-home fs/absolutize str)})))
+                  {:source source-path
+                   :dest   dest})))
