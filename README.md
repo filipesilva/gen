@@ -28,9 +28,6 @@ You should now be able to run `gen --version` and `gen --help`.
 
 `gen` parses variables like `{{name}}` in file paths, file contents, and commands, then replaces them with the values you provided in CLI flags like `--name foo`.
 
-Parsing uses [Selmer](https://github.com/yogthos/Selmer).
-Check the Selmer docs for advanced variable usage like `{{name|capitalize}}` filters and `{% if condition %}yes!{% endif %}` conditionals.
-
 To get started make a new template folder, and put a file with a template var there:
 
 ``` sh
@@ -75,6 +72,23 @@ Default vars:
   --year      2025       Current year
 ...
 ```
+
+## Filters
+
+Parsing uses [Selmer](https://github.com/yogthos/Selmer).
+Check the Selmer docs for advanced variable usage like `{{name|capitalize}}` filters and `{% if condition %}yes!{% endif %}` conditionals.
+
+`gen` adds a few filters of it's own related to casing, courtesy of [camel-snake-kebab](https://clj-commons.org/camel-snake-kebab/):
+- pascal-case
+- camel-case
+- screaming-snake-case
+- snake-case
+- kebab-case
+- camel-snake-case
+- http-header-case
+
+Snake case is especially useful for Clojure filenames.
+Use `src/{{my-var|snake-case}}.clj` to turn a `foo-bar` var into `foo_bar`.
 
 
 ## Configuration

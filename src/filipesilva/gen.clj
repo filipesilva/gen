@@ -6,6 +6,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [filipesilva.gen.error :as error]
+            [filipesilva.gen.filters]
             [medley.core :as m]
             [selmer.parser :as selmer]))
 

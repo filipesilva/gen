@@ -6,4 +6,5 @@
          dev.weavejester/medley     {:mvn/version "1.8.1"}   ;; https://github.com/weavejester/medley
          selmer/selmer              {:mvn/version "1.12.59"} ;; https://github.com/yogthos/Selmer
          io.github.paintparty/bling {:mvn/version "0.4.2"}   ;; https://github.com/paintparty/bling
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"} ;; https://clj-commons.org/camel-snake-kebab/
          }}
