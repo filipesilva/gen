@@ -127,13 +127,14 @@ a :sources shorthand map, and :vars that configuration will merge on top.")
 
 (defn run
   {:org.babashka/cli config-spec}
-  [{:keys [version help config-help] :as args}]
+  [{:keys [version help config-help source] :as args}]
   (try
     (cond
-      version     (show-version)
-      help        (show-help config-spec)
-      config-help (show-config-help)
-      :else       (-> args args->cli-config config/compose-configs gen/generate))
+      (nil? source) (show-help config-spec)
+      version       (show-version)
+      help          (show-help config-spec)
+      config-help   (show-config-help)
+      :else         (-> args args->cli-config config/compose-configs gen/generate))
     (catch ^:sci/error Exception e
       (if (error/error? e)
         (do (error/log e)
