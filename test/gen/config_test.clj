@@ -41,24 +41,36 @@
             :dest   "/tmp/to"
             :vars   {:a 1, :b 2, :c 3, :d 4, :dest-name "name"}}
            (compose-configs
-            {"/tmp/from/gen.edn"   {:vars {:a 1}}
-             "/tmp/local/gen.edn"  {:vars {:b 2}}
-             "/tmp/global/gen.edn" {:vars {:c 3}}}
+            {"/tmp/from/gen.edn"          {:vars {:a 1}}
+             "/tmp/local/gen.edn"         {:vars {:b 2}}
+             "/tmp/global/gen-global.edn" {:vars {:c 3}}}
             {:source            "/tmp/from"
              :dest              "/tmp/to"
              :vars              {:d 4, :dest-name "name"}
              :gen/config        "/tmp/local/gen.edn"
-             :gen/global-config "/tmp/global/gen.edn"}))))
+             :gen/global-config "/tmp/global/gen-global.edn"}))))
 
-  (testing "uses from aliases"
+  (testing "uses sources"
     (is (= {:source "/tmp/from"
             :dest   "/tmp/to"
             :vars   {:dest-name "to"}}
            (compose-configs
-            {"/tmp/from/gen.edn"   {}
-             "/tmp/global/gen.edn" {:sources {:f "/tmp/from"}}}
-            {:source            "f" :dest "/tmp/to"
-             :gen/global-config "/tmp/global/gen.edn"}))))
+            {"/tmp/from/gen.edn"          {}
+             "/tmp/global/gen-global.edn" {:sources {:f "/tmp/from"}}}
+            {:source            "f"
+             :dest              "/tmp/to"
+             :gen/global-config "/tmp/global/gen-global.edn"}))))
+
+  (testing "resolves sources from global config"
+    (is (= {:source "/tmp/global/from"
+            :dest   "/tmp/to"
+            :vars   {:dest-name "to"}}
+           (compose-configs
+            {"/tmp/global/from/gen.edn"   {}
+             "/tmp/global/gen-global.edn" {:sources {:f "from"}}}
+            {:source            "f"
+             :dest              "/tmp/to"
+             :gen/global-config "/tmp/global/gen-global.edn"}))))
 
   (testing "uses aliases"
     (is (= {:source "/tmp/from"

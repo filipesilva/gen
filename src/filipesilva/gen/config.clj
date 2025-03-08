@@ -31,7 +31,7 @@
       (str f))))
 
 (defn parse-source-aliases-dest
-  [{:keys [source dest]} {:keys [sources]}]
+  [{:keys [source dest]} {:keys [sources]} global-config-path]
   (let [[source' dest']      (cond
                                (and source dest)       [source dest]
                                (and source (not dest)) ["" source]
@@ -41,7 +41,9 @@
                                (if (= first "https")
                                  (into [(str first ":" second)] rest)
                                  split))
-        source'''            (get sources (keyword source'') source'')
+        source'''            (if-let [global-source (some-> sources (get (keyword source'')) fs/expand-home)]
+                               (fs/path (fs/parent global-config-path) global-source)
+                               source'')
         source''''           (some-> source''' not-empty fs/expand-home fs/absolutize str)
         dest''               (some-> dest' not-empty fs/expand-home fs/absolutize str)]
     [source'''' aliases dest'']))
@@ -85,7 +87,7 @@
         local-config          (some-> local-config-path slurp e/parse-string)
         global-config-path    (:gen/global-config cli-config)
         global-config         (some-> global-config-path slurp e/parse-string)
-        [source aliases dest] (parse-source-aliases-dest cli-config global-config)
+        [source aliases dest] (parse-source-aliases-dest cli-config global-config global-config-path)
         source-path           (resolve-source-path source local-config-path)
         source-config-path    (if (empty? source)
                                 local-config-path
