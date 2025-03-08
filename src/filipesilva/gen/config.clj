@@ -66,8 +66,9 @@
     (and (not-empty source) (fs/directory? source))
     source
 
-    (or (str/starts-with? source "https://")
-        (str/starts-with? source "git@"))
+    (and source
+         (or (str/starts-with? source "https://")
+             (str/starts-with? source "git@")))
     (git-clone-path source)
 
     :else
