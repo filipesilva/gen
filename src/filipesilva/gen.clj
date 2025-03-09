@@ -10,6 +10,14 @@
             [medley.core :as m]
             [selmer.parser :as selmer]))
 
+;; Don't try to template these, their content is binary.
+;; Maybe should make it configurable at some point.
+(def ignored-extensions
+  #{".png" ".jpeg" ".jpg" ".gif" ".svg" ".webp" ".ico"})
+
+(defn dont-template? [filepath]
+  (some #(str/ends-with? filepath %) ignored-extensions))
+
 (defn read [source root]
   (let [source' (fs/path source root)]
     (->> (fs/glob source' "**")
@@ -23,7 +31,8 @@
 
 (defn check [file-map cmds dest vars allow-missing? overwrite? dry-run?]
   (when-not allow-missing?
-    (let [known   (->> file-map (mapcat identity) (into cmds)
+    (let [known   (->> file-map (filter #(-> % first dont-template? not))
+                       (mapcat identity) (into cmds)
                        (map selmer/known-variables) (reduce into #{}))
           missing (set/difference known vars)]
       (when-not (empty? missing)
@@ -44,7 +53,9 @@
 (defn render [file-map vars]
   (m/map-kv (fn [filepath content]
               [(selmer/render filepath vars)
-               (selmer/render content vars)])
+               (if (dont-template? filepath)
+                 content
+                 (selmer/render content vars))])
             file-map))
 
 (defn write [file-map dest dry-run?]
@@ -93,6 +104,9 @@
 ;;     - call a script
 ;;     - stdin gets edn with {:file-content "...", :xform-content "..."}
 ;;     - stdout gets xformed-file-content
+;;     - config have a :xforms map from k to bin path
+;;     - resolved from declaring file
+;;     - can be declared on global, overwritten on local
 ;; - xform seems like the escape hatch
 ;;   - probably always needs dest use symbol/scripts and paths and whatever
 ;;   - will need a classpath and require thing... try dest reuse as much source bb
