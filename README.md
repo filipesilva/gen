@@ -152,8 +152,7 @@ Multiple aliases stack on top of each other, and the resulting merged config wil
  :sources {:scratch "~/repos/gen-scratch"
            :license "https://github.com/user/license:mit"}
  ;; global defaults, local and cli vars will overwrite these
- :vars    {:name   "John Doe"
-           :author "John Doe"
+ :vars    {:author "John Doe"
            :email  "john@doe.com"}}
 
 ```
@@ -161,7 +160,7 @@ Multiple aliases stack on top of each other, and the resulting merged config wil
 Now calling `gen license .` is the same as `gen https://github.com/user/license:mit . --author "John Doe"`.
 
 
-## Usage in a existing project 
+## Usage in a existing project
 
 Besides making new projects, `gen` can be used in a project you already have and where you want to make new files from project-specific templates, like `rails generate`.
 
@@ -176,10 +175,10 @@ Start by adding a `gen.edn` at the project root, and the template files:
 ```
 
 ``` clojure
-;; templates/test/{{name}}_test_.clj
+;; templates/test/test/{{name|snake-case}}_test_.clj
 (ns {{name}}-test
   (:require [clojure.test :refer [deftest is testing]]))
-  
+
 (deftest missing
   (is false))
 ```
@@ -224,4 +223,4 @@ You can install the local repo using `bbin install .`
 
 `bb test` and `bb e2e` for testing.
 
-Version is auto determined from the git repository 
+Version is auto determined from the git repository
