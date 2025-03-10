@@ -10,13 +10,13 @@
             [medley.core :as m]
             [selmer.parser :as selmer]))
 
-;; Don't try to template these, their content is binary.
+;; Don't try to render non-text extensions.
 ;; Maybe should make it configurable at some point.
-(def ignored-extensions
+(def render-ignore
   #{".png" ".jpeg" ".jpg" ".gif" ".svg" ".webp" ".ico"})
 
-(defn dont-template? [filepath]
-  (some #(str/ends-with? filepath %) ignored-extensions))
+(defn dont-render? [filepath]
+  (some #(str/ends-with? filepath %) render-ignore))
 
 (defn read [source root]
   (let [source' (fs/path source root)]
@@ -31,7 +31,7 @@
 
 (defn check [file-map cmds dest vars allow-missing? overwrite? dry-run?]
   (when-not allow-missing?
-    (let [known   (->> file-map (filter #(-> % first dont-template? not))
+    (let [known   (->> file-map (filter #(-> % first dont-render? not))
                        (mapcat identity) (into cmds)
                        (map selmer/known-variables) (reduce into #{}))
           missing (set/difference known vars)]
@@ -53,7 +53,7 @@
 (defn render [file-map vars]
   (m/map-kv (fn [filepath content]
               [(selmer/render filepath vars)
-               (if (dont-template? filepath)
+               (if (dont-render? filepath)
                  content
                  (selmer/render content vars))])
             file-map))
