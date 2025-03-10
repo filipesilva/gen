@@ -130,10 +130,10 @@ a :sources shorthand map, and :vars that configuration will merge on top.")
   [{:keys [version help config-help source] :as args}]
   (try
     (cond
-      (nil? source) (show-help config-spec)
       version       (show-version)
       help          (show-help config-spec)
       config-help   (show-config-help)
+      (nil? source) (show-help config-spec)
       :else         (-> args args->cli-config config/compose-configs gen/generate))
     (catch ^:sci/error Exception e
       (if (error/error? e)
