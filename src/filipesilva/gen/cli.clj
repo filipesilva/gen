@@ -136,7 +136,8 @@ a :sources shorthand map, and :vars that configuration will merge on top.")
       (nil? source) (show-help config-spec)
       :else         (-> args args->cli-config config/compose-configs gen/generate))
     (catch ^:sci/error Exception e
-      (if (error/error? e)
-        (do (error/log e)
-            (System/exit 1))
-        (throw e)))))
+      (let [maybe-ex-info (error/sci-error->ex-info e)]
+        (if (error/error? maybe-ex-info)
+          (do (error/log maybe-ex-info)
+              (System/exit 1))
+          (throw e))))))
