@@ -2,11 +2,12 @@
   (:refer-clojure :exclude [read])
   (:require [babashka.fs :as fs]
             [babashka.process :as process]
-            [bling.core :as bling]
+            [clojure.repl.deps :as deps]
             [clojure.set :as set]
             [clojure.string :as str]
             [filipesilva.gen.error :as error]
             [filipesilva.gen.filters]
+            [filipesilva.gen.log :as log]
             [medley.core :as m]
             [selmer.parser :as selmer]))
 
@@ -17,6 +18,13 @@
 
 (defn dont-render? [filepath]
   (some #(str/ends-with? filepath %) render-ignore))
+
+(defn xform-filepath->filepath+sym [xforms xform-filepath]
+  (some (fn [[ext sym]]
+          (when (str/ends-with? xform-filepath ext)
+            [(subs xform-filepath 0 (- (count xform-filepath) (count ext)))
+             sym]))
+        xforms))
 
 (defn read [source root]
   (let [source' (fs/path source root)]
@@ -29,7 +37,7 @@
          (map (fn [f] [f (slurp (str (fs/path source' f)))]))
          (into {}))))
 
-(defn check [file-map cmds dest vars allow-missing? overwrite? dry-run?]
+(defn check [file-map cmds dest vars xforms allow-missing? overwrite? dry-run?]
   (when-not allow-missing?
     (let [known   (->> file-map (filter #(-> % first dont-render? not))
                        (mapcat identity) (into cmds)
@@ -40,6 +48,7 @@
 
   (when-not (or dry-run? overwrite?)
     (let [overwritten-files (->> (keys file-map)
+                                 (filter (comp not (partial xform-filepath->filepath+sym xforms)))
                                  (map #(fs/path dest %))
                                  (map #(fs/relativize (fs/cwd) %))
                                  (filter fs/exists?)
@@ -58,32 +67,58 @@
                  (selmer/render content vars))])
             file-map))
 
-(defn write [file-map dest dry-run?]
+(defn write [file-map dest xforms dry-run?]
   (run! (fn [[filepath content]]
           (let [f (fs/path dest filepath)]
-            (println (bling/bling [:green "create "])
-                     (->> f (fs/relativize (fs/cwd)) str))
+            (log/write (->> f (fs/relativize (fs/cwd)) str))
             (when-not dry-run?
               (fs/create-dirs (fs/parent f))
               (spit (str f) content))))
-        (sort-by first file-map))
+        (->> file-map
+             (filter (comp not (partial xform-filepath->filepath+sym xforms) first))
+             (sort-by first)))
+  file-map)
+
+(defn xform [file-map dest xforms dry-run?]
+  (run! (fn [[xform-filepath xform-content]]
+          (let [[filepath sym] (xform-filepath->filepath+sym xforms xform-filepath)
+                f              (fs/path dest filepath)]
+            (if-not (fs/exists? f)
+              (log/warn "missing, can't xform" (->> f (fs/relativize (fs/cwd)) str))
+              (let [file-content    (slurp (str f))
+                    xformed-content ((requiring-resolve sym) file-content xform-content)]
+                (log/xform (->> f (fs/relativize (fs/cwd)) str))
+                (when-not dry-run?
+                  (fs/create-dirs (fs/parent f))
+                  (spit (str f) xformed-content))))))
+        (->> file-map
+             (filter (comp (partial xform-filepath->filepath+sym xforms) first))
+             (sort-by first)))
   file-map)
 
 (defn run-cmd! [dest vars dry-run? cmd]
   (let [cmd' (selmer/render cmd vars)]
-    (println (bling/bling [:bold.info "run    "]) cmd')
+    (log/run cmd')
     (when-not dry-run?
       (try
         (process/shell {:dir dest, :out :string, :err :string} cmd')
         (catch Exception _
-          (println (bling/bling [:bold.error "failed "]) cmd'))))))
+          (log/error cmd'))))))
 
-(defn generate [{:keys [source dest root vars cmds]
+(defn resolve-local-coord [source coord]
+  (if (:local/root coord)
+    (update coord :local/root #(str (fs/path source %)))
+    coord))
+
+(defn generate [{:keys [source dest root vars cmds deps xforms]
                  :gen/keys [allow-missing overwrite dry-run]}]
+  (when deps
+    (deps/add-libs (m/map-vals (partial resolve-local-coord source) deps)))
   (-> (read source root)
-      (check cmds dest vars allow-missing overwrite dry-run)
+      (check cmds dest vars xforms allow-missing overwrite dry-run)
       (render vars)
-      (write dest dry-run))
+      (write dest xforms dry-run)
+      (xform dest xforms dry-run))
   (run! (partial run-cmd! dest vars dry-run) cmds))
 
 
@@ -124,3 +159,5 @@
 ;;   - easy dest do multiple in config, just make it an array
 ;;   - doing it in cli might be hard, would need another char like `:` is used for aliases
 ;;   - related dest :include :exclude :extra-*, need dest think better about composability
+;; - known errors could be a lot nicer
+;;   - still prints the stack trace I think

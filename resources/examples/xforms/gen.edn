@@ -1,0 +1,3 @@
+{:deps   {} ;; not needed since these xforms are built-in
+ :xforms {".append"  filipesilva.gen.xforms/append
+          ".prepend" filipesilva.gen.xforms/prepend}}

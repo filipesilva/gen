@@ -1,4 +1,4 @@
-(ns gen.config-test
+(ns filipesilva.gen.config-test
   (:require [babashka.fs :as fs]
             [clojure.test :refer [deftest is testing]]
             [filipesilva.gen.config :as config]
@@ -13,12 +13,12 @@
 (defn compose-configs [file-map m]
   (with-redefs [slurp                 (mock-slurp (m/map-vals str file-map))
                 fs/exists?            (constantly true) ;; in compose-configs
-                fs/directory?         (constantly true) ;; in resolve-from-path
+                fs/directory?         (constantly true) ;; in resolve-source-path
                 config/default-config {}]
     (config/compose-configs m)))
 
 (deftest compose-configs-test
-  (testing "uses from config"
+  (testing "uses source config"
     (is (= {:source "/tmp/from"
             :dest   "/tmp/to"
             :vars   {:a 1, :dest-name "to"}}
@@ -92,4 +92,17 @@
                                   :default-alias :a1
                                   :aliases       {:a1 {:vars {:b 2}}}}}
             {:source "/tmp/from"
-             :dest   "/tmp/to"})))))
+             :dest   "/tmp/to"}))))
+
+  (testing "merges deps and xforms"
+    (is (= {:source "/tmp/from"
+            :dest   "/tmp/to"
+            :vars   {:dest-name "to"}
+            :deps   {:a 3, :b 2}
+            :xforms {:c 7, :d 6}}
+           (compose-configs
+            {"/tmp/from/gen.edn"          {:deps {:a 3}, :xforms {:c 7}}
+             "/tmp/local/gen.edn"         {:deps {:b 2}, :xforms {:d 6}}}
+            {:source            "/tmp/from"
+             :dest              "/tmp/to"
+             :gen/config        "/tmp/local/gen.edn"})))))

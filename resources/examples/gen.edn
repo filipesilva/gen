@@ -2,4 +2,6 @@
  :vars {}           ;; default vars, e.g. {:author "me"}
  :cmds []           ;; run in shell after file generation, e.g. ["git init"]
  :default-alias nil ;; used if no alias is specified
- :aliases {}}       ;; aliases are extra sets of configuration that are merged on top
+ :aliases {}        ;; aliases are extra sets of configuration that are merged on top
+ :xforms {}         ;; xforms are ext->sym mappings to modify a file
+ :deps {}}          ;; dependencies for xforms symbols

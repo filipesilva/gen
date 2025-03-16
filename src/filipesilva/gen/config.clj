@@ -102,7 +102,7 @@
     (m/deep-merge default-config
                   {:vars {:dest-name (fs/file-name dest)}}
                   (select-keys global-config [:vars])
-                  (select-keys local-config [:vars])
+                  (select-keys local-config [:vars :deps :xforms])
                   (dissoc source+aliases-config :aliases :default-alias)
                   (select-keys cli-config [:vars :gen/overwrite :gen/dry-run :gen/allow-missing])
                   {:source source-path

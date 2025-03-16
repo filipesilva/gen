@@ -9,9 +9,9 @@ Like `rails new` and `rails generate`, but generic.
 
 ``` sh
 $ gen from/here to/there --name foo
-create  to/there/deps.edn
-create  to/there/src/foo.clj
-run     git init
+write to/there/deps.edn
+write to/there/src/foo.clj
+run   git init
 ```
 
 _Special thanks to [jaide](https://github.com/jaidetree/) for the logo!_
@@ -39,7 +39,7 @@ Now you can use that template folder to generate new files:
 
 ``` sh
 $ gen my-first-template my-first-gen --x world
-create  my-first-gen/hello.md
+write my-first-gen/hello.md
 
 $ cat my-first-gen/hello.md
 Hello world!
@@ -49,7 +49,7 @@ You can also use git repositories such as sources:
 
 ``` sh
 $ gen https://github.com/filipesilva/gen-license ./ --author "John Doe"
-create  LICENSE
+write LICENSE
 
 $ cat LICENSE
 MIT License
@@ -120,10 +120,10 @@ Calling `gen` with this template will show the files created and the ran command
 
 ``` sh
 $ gen https://github.com/filipesilva/gen-scratch foo
-create  foo/README.md
-create  foo/deps.edn
-create  foo/src/foo.clj
-run     git init
+write foo/README.md
+write foo/deps.edn
+write foo/src/foo.clj
+run   git init
 ```
 
 Aliases let you have multiple configuration sets in a single configuration file.
@@ -187,7 +187,7 @@ Now run `gen test --name foo`:
 
 ``` sh
 $ gen test --name foo
-create  test/foo_test.clj
+write test/foo_test.clj
 ```
 
 Notice how you didn't have to specify the source.
@@ -196,6 +196,53 @@ When you omit the source, `gen` will look up from the current dir for the first 
 
 You can use multiple aliases and use them on the source argument like `gen :test test --name foo`.
 This way you can make your own template library for your project.
+
+
+## xforms
+
+Gen can also transform (xform) files using dynamically loaded transformer functions registered to file extentions in configuration.
+
+Let's look at an example. Given this source configuration at `xforms/gen.edn`:
+
+``` edn
+{:deps   {} ;; no deps needed since these xforms are built-in
+ :xforms {".append"  filipesilva.gen.xforms/append
+          ".prepend" filipesilva.gen.xforms/prepend}}
+```
+
+And the following template files with newlines at the end:
+- `xforms/text.md`: `original`
+- `xforms/text.md.prepend`: `before`
+- `xforms/text.md.append`: `after`
+
+``` sh
+$ gen xforms ./
+write text.md
+xform text.md
+xform text.md
+```
+
+`xforms/text.md.prepend` prepended its content to `xforms/text.md`, and `xforms/text.md.append` appended its.
+`text.md`'s final content is:
+
+```
+before
+original
+after
+```
+
+You can declare your own xforms and import them using the configuration `:deps`.
+The implementation for the transforms referenced above is:
+
+``` clojure
+(ns filipesilva.gen.xforms)
+
+(defn append [file xform]
+  (str file xform))
+
+(defn prepend [file xform]
+  (str xform file))
+```
 
 
 ## Clojure library
