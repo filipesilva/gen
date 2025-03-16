@@ -200,7 +200,7 @@ This way you can make your own template library for your project.
 
 ## xforms
 
-Gen can also transform (xform) files using dynamically loaded transformer functions registered to file extentions in configuration.
+Gen can also transform (xform) files using dynamically loaded transformer functions registered to file extensions in configuration.
 
 Let's look at an example. Given this source configuration at `xforms/gen.edn`:
 
