@@ -218,8 +218,8 @@ And the following template files with newlines at the end:
 ``` sh
 $ gen xforms ./
 write text.md
-xform text.md
-xform text.md
+xform text.md append
+xform text.md prepend
 ```
 
 `xforms/text.md.prepend` prepended its content to `xforms/text.md`, and `xforms/text.md.append` appended its.
