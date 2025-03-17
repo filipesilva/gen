@@ -19,11 +19,14 @@
 (defn dont-render? [filepath]
   (some #(str/ends-with? filepath %) render-ignore))
 
-(defn xform-filepath->filepath+sym [xforms xform-filepath]
+(defn ->xform
+  "Returns xform for xform-filepath, if any, as [filepath sym xform-name]."
+  [xforms xform-filepath]
   (some (fn [[ext sym]]
           (when (str/ends-with? xform-filepath ext)
             [(subs xform-filepath 0 (- (count xform-filepath) (count ext)))
-             sym]))
+             sym
+             (subs ext 1)]))
         xforms))
 
 (defn read [source root]
@@ -48,7 +51,7 @@
 
   (when-not (or dry-run? overwrite?)
     (let [overwritten-files (->> (keys file-map)
-                                 (filter (comp not (partial xform-filepath->filepath+sym xforms)))
+                                 (filter (comp not (partial ->xform xforms)))
                                  (map #(fs/path dest %))
                                  (map #(fs/relativize (fs/cwd) %))
                                  (filter fs/exists?)
@@ -75,24 +78,24 @@
               (fs/create-dirs (fs/parent f))
               (spit (str f) content))))
         (->> file-map
-             (filter (comp not (partial xform-filepath->filepath+sym xforms) first))
+             (filter (comp not (partial ->xform xforms) first))
              (sort-by first)))
   file-map)
 
 (defn xform [file-map dest xforms dry-run?]
   (run! (fn [[xform-filepath xform-content]]
-          (let [[filepath sym] (xform-filepath->filepath+sym xforms xform-filepath)
-                f              (fs/path dest filepath)]
+          (let [[filepath sym xform-name] (->xform xforms xform-filepath)
+                f (fs/path dest filepath)]
             (if-not (fs/exists? f)
               (log/warn "missing, can't xform" (->> f (fs/relativize (fs/cwd)) str))
               (let [file-content    (slurp (str f))
                     xformed-content ((requiring-resolve sym) file-content xform-content)]
-                (log/xform (->> f (fs/relativize (fs/cwd)) str))
+                (log/xform (->> f (fs/relativize (fs/cwd)) str) xform-name)
                 (when-not dry-run?
                   (fs/create-dirs (fs/parent f))
                   (spit (str f) xformed-content))))))
         (->> file-map
-             (filter (comp (partial xform-filepath->filepath+sym xforms) first))
+             (filter (comp (partial ->xform xforms) first))
              (sort-by first)))
   file-map)
 
