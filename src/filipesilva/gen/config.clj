@@ -48,8 +48,8 @@
         source'''            (if-let [global-source (some-> sources (get (keyword source'')) fs/expand-home)]
                                (fs/path (fs/parent global-config-path) global-source)
                                source'')
-        source''''           (if (git-url? source)
-                               source
+        source''''           (if (git-url? source''')
+                               source'''
                                (some-> source''' not-empty fs/expand-home fs/absolutize str))
         dest''               (some-> dest' not-empty fs/expand-home fs/absolutize str)]
     [source'''' aliases dest'']))
