@@ -13,6 +13,8 @@
                   (shell "gen --config-help")
                   (shell "gen resources/examples/scratch e2e/actual/new-scratch")
                   (shell "rm -rf e2e/actual/new-scratch/.git")
+                  (shell "gen https://github.com/filipesilva/gen-scratch e2e/actual/git-scratch")
+                  (shell "rm -rf e2e/actual/git-scratch/.git")
                   (shell "gen resources/examples/xforms e2e/actual/xforms")
                   (shell "gen resources/examples/project:test e2e/actual/new-scratch --name foo")
                   (shell "gen resources/examples/license e2e/actual/license/mit --author \"Filipe Silva\" --year 2025")
